@@ -1,21 +1,22 @@
 import React, { ChangeEvent } from 'react';
-import { useSelector, useDispatch } from 'react-redux'
-import  type { RootState }  from '../../store'
+import { useSelector } from 'react-redux'
+import { RootState, useAppDispatch }  from '../../store'
 
 import { ReactComponent as TimesSolid } from './times-solid.svg'
 import { availableColors, capitalize } from '../filters/colors'
 
-import { selectTodoById, todoToggled } from './todosSlice'
+import { selectTodoById, todoColorSelected, todoDeleted, todoToggled } from './todosSlice'
+import { Color } from '../type';
 
 // 解构`props.id` 因为我们只需要ID 
 const TodoListItem = ({ id }: { id: number, }) => {
 
-    const dispatch = useDispatch()
+    const dispatch = useAppDispatch()
 
-    const todo = useSelector((state: ReturnType<RootState>) => selectTodoById(state, id))
+    const todo = useSelector((state: RootState) => selectTodoById(state, id))
 
-    if(todo === undefined) return null;
-    
+    if(todo === undefined)  return null
+
     const { text, completed, color } = todo
 
     const handleCompletedChanged = () => {
@@ -24,11 +25,11 @@ const TodoListItem = ({ id }: { id: number, }) => {
 
     const handleColorChanged = (e: ChangeEvent<HTMLSelectElement>) => {
         const color = e.target.value
-        dispatch({ type: 'todos/colorSelected', payload: { todoId: todo.id,color }})
+        dispatch(todoColorSelected(todo.id, color as Color))
     }
   
     const onDelete = () => {
-        dispatch({ type: 'todos/todoDeleted', payload: todo.id })
+        dispatch(todoDeleted(todo.id))
       }
 
     const colorOptions = availableColors.map((c) => (

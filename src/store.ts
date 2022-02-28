@@ -1,26 +1,20 @@
-import { createStore, applyMiddleware } from 'redux'
-import thunk from 'redux-thunk';
+import { configureStore } from '@reduxjs/toolkit';
 
-import { composeWithDevTools } from '@redux-devtools/extension';
-import rootReducer from './reducer'
-// import { sayHiOnDispatch, includeMeaningOfLife } from './exampleAddons/enhancers';
-// import { loggerMiddleware } from './exampleAddons/middleware'
+import todoReducer from "./features/todos/todosSlice";
+import filtersReducer from "./features/filters/filtersSlice";
+import { useDispatch } from 'react-redux';
 
 
-// const composedEnhancer = compose(sayHiOnDispatch, includeMeaningOfLife)
+const store = configureStore({
+    reducer: {
+        todos: todoReducer,
+        filters: filtersReducer
+    },
+})
 
-
-const composedEnhancer = composeWithDevTools(
-    // example: 在这里添加任何你想使用的中间件
-    applyMiddleware(thunk),
-     // 可以在这里添加其他增强器(如果有的话)
-    // sayHiOnDispatch,
-    // includeMeaningOfLife
-)
-
-const store = createStore(rootReducer, composedEnhancer)
-
-export type AppDispatch = typeof store.dispatch;
-export type RootState = typeof store.getState
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
+// 导出一个可以重用的钩子来解析类型
+export const useAppDispatch = () => useDispatch<AppDispatch>()
 
 export default store;

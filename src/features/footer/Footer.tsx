@@ -1,17 +1,19 @@
 import React, { MouseEventHandler } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../../store'
+import type { RootState } from '../../store'
 
 import { availableColors, capitalize } from '../filters/colors'
-import { StatusFilters, transformStatus, colorFilterChanged } from '../filters/filtersSlice'
-import { selectTodos } from '../todos/todosSlice'
+import { StatusFilters, colorFilterChanged, statusFilterChanged } from '../filters/filtersSlice'
+import { allTodosCompleted, completedTodosCleared, selectTodos } from '../todos/todosSlice'
+import type { ChangeType } from '../filters/filtersSlice'
+import type { Color } from '../type'
 
 const CompletedTodos = ({onAllCompleted, onClear}: {onAllCompleted: MouseEventHandler, onClear: MouseEventHandler }) => {
   return (
     <div className="actions">
       <h5>Actions</h5>
       <button className="button" onClick={onAllCompleted}>标记全部完成</button>
-      <button className="button" onClick={onClear}>清除完成</button>
+      <button className="button" onClick={onClear}>清除已完成</button>
     </div>
   )
 }
@@ -26,8 +28,7 @@ const RemainingTodos = ({ count }: { count: number}) => {
     )
   }
 
-
-  const StatusFilter = ({ value: status, onChange }: {value: string; onChange: (status: string) => void}) => {
+  const StatusFilter = ({ value: status, onChange }: {value: string; onChange: (status: StatusFilters) => void}) => {
     const renderedFilters = Object.keys(StatusFilters).map((key) => {
       const value = StatusFilters[key as keyof typeof StatusFilters]
       const handleClick = () => onChange(value)
@@ -36,7 +37,7 @@ const RemainingTodos = ({ count }: { count: number}) => {
       return (
         <li key={value}>
           <button className={className} onClick={handleClick}>
-            {transformStatus(key)}
+            {value}
           </button>
         </li>
       )
@@ -50,7 +51,7 @@ const RemainingTodos = ({ count }: { count: number}) => {
     )
   }
 
-  const ColorFilters = ({ value: colors, onChange }: {value: string[]; onChange: (color: string, changeType: 'removed' | 'added') => void}) => {
+  const ColorFilters = ({ value: colors, onChange }: {value: string[]; onChange: (color: Color, changeType: ChangeType) => void}) => {
     const renderedColors = availableColors.map((color) => {
       const checked = colors.includes(color)
       const handleChange = () => {
@@ -88,7 +89,7 @@ const RemainingTodos = ({ count }: { count: number}) => {
   const Footer = () => {
     const dispatch = useDispatch()
 
-    const todosRemaining = useSelector((state: ReturnType<RootState>) => {
+    const todosRemaining = useSelector((state: RootState) => {
 
       const uncompletedTodos = selectTodos(state).filter((todo) => !todo.completed)
 
@@ -98,13 +99,13 @@ const RemainingTodos = ({ count }: { count: number}) => {
 
     const { status, colors } = useSelector((state:any) => state.filters)
 
-    const onMarkCompletedClicked = () => dispatch({ type: 'todos/allCompleted' })
-    const onClearCompletedClicked = () => dispatch({ type: 'todos/completedCleared' })
+    const onMarkCompletedClicked = () => dispatch(allTodosCompleted())
+    const onClearCompletedClicked = () => dispatch(completedTodosCleared())
 
-    const onStatusChange = (status: string) => 
-      dispatch({ type: 'filters/statusFilterChanged', payload: status})
+    const onStatusChange = (status: StatusFilters) => 
+      dispatch(statusFilterChanged(status))
 
-    const onColorChange = (color: string, changeType: 'removed' | 'added') => {
+    const onColorChange = (color: Color, changeType: ChangeType) => {
       dispatch(colorFilterChanged(color, changeType))
     }
   
